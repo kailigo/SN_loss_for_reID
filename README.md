@@ -18,8 +18,8 @@ Python 3 + PyTorch 4.0
 Results on Market1501
 ![Retrieval](/figs/quantitative.png)
 
-Analysis on the impact of gallery size
-![Retrieval](/figs/gal_size_analysis.png)
+<!-- Analysis on the impact of gallery size
+![Retrieval](/figs/gal_size_analysis.png) -->
 
 
 ### Visual Results
