@@ -15,11 +15,19 @@ Python 3 + PyTorch 4.0
 
 ### Quantitative Results
 
+Results on Market1501
 ![Retrieval](/figs/quantitative.png)
+
+Analysis on the impact of gallery size
+![Retrieval](/figs/gal_size_analysis.png)
+
 
 ### Visual Results
 
+Pedestrian retrieval results
 ![Retrieval](/figs/retrieval.png)
+
+Pedestrian feature embedding visualization
 ![Embedding visualization](/figs/embedding.png)
 
 ## Citation
