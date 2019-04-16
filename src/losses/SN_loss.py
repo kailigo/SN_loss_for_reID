@@ -7,9 +7,9 @@ from torch.autograd import Variable
 import numpy as np
 
 
-class myKNNSoftmax(nn.Module):
+class SN_LOSS(nn.Module):
     def __init__(self, alpha=30, margin=1, k=16, weight=1.0):
-        super(myKNNSoftmax, self).__init__()
+        super(SN_LOSS, self).__init__()
         self.margin = margin
         self.alpha = alpha
         self.K = k

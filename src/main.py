@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import sys
 
+from pdb import set_trace as breakpoint
+
 sys.path.insert(0, '.')
 
 import torch
@@ -14,32 +16,35 @@ import os.path as osp
 from tensorboardX import SummaryWriter
 import numpy as np
 import argparse
-import losses
+from losses.SN_loss import SN_LOSS
 
 
 # from tri_loss.model.my_center_loss import CenterLoss
-from tri_loss.model.my_center_loss import CenterLoss
 
-from tri_loss.dataset import create_dataset
-from tri_loss.model.Model import Model
-from tri_loss.model.TripletLoss import TripletLoss
-from tri_loss.model.loss import global_loss
+# from model.my_center_loss import CenterLoss
+from data.dataset import create_dataset
 
-from tri_loss.utils.utils import time_str
-from tri_loss.utils.utils import str2bool
-from tri_loss.utils.utils import tight_float_str as tfs
-from tri_loss.utils.utils import may_set_mode
-from tri_loss.utils.utils import load_state_dict
-from tri_loss.utils.utils import load_ckpt
-from tri_loss.utils.utils import save_ckpt
-from tri_loss.utils.utils import set_devices
-from tri_loss.utils.utils import AverageMeter
-from tri_loss.utils.utils import to_scalar
-from tri_loss.utils.utils import ReDirectSTD
-from tri_loss.utils.utils import set_seed
-from tri_loss.utils.utils import adjust_lr_exp
-from tri_loss.utils.utils import adjust_lr_staircase
+from src.model.Model import Model
+# from src.model.TripletLoss import TripletLoss
+# from src.model.loss import global_loss
 
+from data.utils.utils import time_str
+from data.utils.utils import str2bool
+from data.utils.utils import tight_float_str as tfs
+from data.utils.utils import may_set_mode
+from data.utils.utils import load_state_dict
+from data.utils.utils import load_ckpt
+from data.utils.utils import save_ckpt
+from data.utils.utils import set_devices
+from data.utils.utils import AverageMeter
+from data.utils.utils import to_scalar
+from data.utils.utils import ReDirectSTD
+from data.utils.utils import set_seed
+from data.utils.utils import adjust_lr_exp
+from data.utils.utils import adjust_lr_staircase
+
+
+# breakpoint()
 
 class Config(object):
   def __init__(self):
@@ -58,7 +63,8 @@ class Config(object):
     parser.add_argument('--crop_prob', type=float, default=0)
     parser.add_argument('--crop_ratio', type=float, default=1)
     parser.add_argument('--mirror', type=str2bool, default=True)
-    parser.add_argument('--ids_per_batch', type=int, default=32)
+
+    parser.add_argument('--ids_per_batch', type=int, default=25)
     parser.add_argument('--ims_per_id', type=int, default=4)
 
     parser.add_argument('--log_to_file', type=str2bool, default=True)
@@ -78,6 +84,9 @@ class Config(object):
     parser.add_argument('--base_lr', type=float, default=2e-4)
     parser.add_argument('--lr_decay_type', type=str, default='exp',
                         choices=['exp', 'staircase'])
+
+    # breakpoint()
+    
     parser.add_argument('--exp_decay_at_epoch', type=int, default=76)
     parser.add_argument('--staircase_decay_at_epochs',
                         type=eval, default=(101, 201,))
@@ -89,17 +98,20 @@ class Config(object):
     parser.add_argument('--center_loss_weight', type=float, default=1e-5)
     parser.add_argument('--xentrp_loss_weight', type=float, default=0)
 
-    parser.add_argument('--knnsoftmax_alpha', type=int, default=20)
-    parser.add_argument('--knnsoftmax_k', type=int, default=10)
+    parser.add_argument('--SN_alpha', type=int, default=20)
+    parser.add_argument('--SN_k', type=int, default=10)
 
     # parser.add_argument('--knnsoftmax_r', type=float, default=1.0)
-    parser.add_argument('--knnsoftmax_w', type=float, default=1.0)
+    parser.add_argument('--SN_w', type=float, default=1.0)
     # parser.add_argument('--exp_root',  )
     parser.add_argument('--exp_root', type=str, default='')
 
     parser.add_argument('--dataset_path', type=str, default='')
 
+    # parser.add_argument('--ckpt_dir', type=str, default='')
+    
     args = parser.parse_args()
+
 
     # gpu ids
     self.sys_device_ids = args.sys_device_ids
@@ -267,12 +279,11 @@ class Config(object):
     if args.exp_dir == '':
       self.exp_dir = osp.join(
         self.exp_root,
-        '{}'.format(self.dataset),
-        #
+        '{}'.format(self.dataset),        
         'lcs_{}_'.format(self.last_conv_stride) +
-        'ka_{}_'.format(args.knnsoftmax_alpha) +
-        'kk_{}_'.format(args.knnsoftmax_k) +        
-        'kw_{}_'.format(args.knnsoftmax_w) +
+        'ka_{}_'.format(args.SN_alpha) +
+        'kk_{}_'.format(args.SN_k) +        
+        'kw_{}_'.format(args.SN_w) +
         ('nf_' if self.normalize_feature else 'not_nf_') +
         'margin_{}_'.format(tfs(self.margin)) +
         'lr_{}_'.format(tfs(self.base_lr)) +
@@ -303,10 +314,10 @@ class Config(object):
     self.center_loss_weight = args.center_loss_weight
     self.xentrp_loss_weight = args.xentrp_loss_weight
 
-    self.knnsoftmax_alpha = args.knnsoftmax_alpha
-    self.knnsoftmax_k = args.knnsoftmax_k
+    self.SN_alpha = args.SN_alpha
+    self.SN_k = args.SN_k
     # self.knnsoftmax_r = args.knnsoftmax_r    
-    self.knnsoftmax_w = args.knnsoftmax_w
+    self.SN_w = args.SN_w
 
 class ExtractFeature(object):
   """A function to be called in the val/test set, to extract features.
@@ -335,6 +346,9 @@ class ExtractFeature(object):
 def main():
   cfg = Config()
 
+  # breakpoint()
+  
+  # breakpoint()
 
   # Redirect logs to both console and file.
   if cfg.log_to_file:
@@ -345,6 +359,10 @@ def main():
   writer = None
 
   TVT, TMO = set_devices(cfg.sys_device_ids)
+
+
+  # breakpoint()
+
 
   if cfg.seed is not None:
     set_seed(cfg.seed)
@@ -379,9 +397,11 @@ def main():
   # Models  #
   ###########
 
+  # breakpoint()
 
   model = Model(last_conv_stride=cfg.last_conv_stride)
   # Model wrapper
+  # model_w = model
   model_w = DataParallel(model)
 
   #############################
@@ -410,7 +430,7 @@ def main():
 
   # May Transfer Models and Optims to Specified Device. Transferring optimizer
   # is to cope with the case when you load the checkpoint to a new device.
-  TMO(modules_optims)
+  # TMO(modules_optims)
 
   ########
   # Test #
@@ -467,7 +487,7 @@ def main():
     return x
 
   if cfg.only_test:
-    test(load_model_weight=True)
+    test_full(load_model_weight=True)
     return
 
 
@@ -478,12 +498,12 @@ def main():
 
   num_class = len(train_set.ids2labels)
   hidden_dim = 2048
-  center_loss = CenterLoss(num_class, hidden_dim)
+  # center_loss = CenterLoss(num_class, hidden_dim)
   nll_loss = torch.nn.NLLLoss()
-  tri_loss = TripletLoss(margin=cfg.margin)
-  center_loss_weight = cfg.center_loss_weight
-  xentrp_loss_weight = cfg.xentrp_loss_weight
-  triplet_loss_weight = cfg.triplet_loss_weight
+  # tri_loss = TripletLoss(margin=cfg.margin)
+  # center_loss_weight = cfg.center_loss_weight
+  # xentrp_loss_weight = cfg.xentrp_loss_weight
+  # triplet_loss_weight = cfg.triplet_loss_weight
 
   start_ep = resume_ep if cfg.resume else 0
   for ep in range(start_ep, cfg.total_epochs):
@@ -521,7 +541,7 @@ def main():
 
     # criterion = losses.create('myknnsoftmax', alpha=cfg.knnsoftmax_alpha, k=cfg.knnsoftmax_k, r=1.0, weight=1.0).cuda()
     
-    criterion = losses.create('myknnsoftmax', alpha=cfg.knnsoftmax_alpha, k=cfg.knnsoftmax_k, weight=cfg.knnsoftmax_w).cuda()
+    criterion = SN_LOSS(alpha=cfg.SN_alpha, k=cfg.SN_k, weight=cfg.SN_w).cuda()
 
       # .cuda()
 
@@ -533,6 +553,11 @@ def main():
       step_st = time.time()
 
       ims, im_names, labels, mirrored, epoch_done = train_set.next_batch()
+
+      if epoch_done or ims.shape[0] != 100:
+        # breakpoint()
+        continue
+
 
       ims_var = Variable(TVT(torch.from_numpy(ims).float()))
       labels_t = TVT(torch.from_numpy(labels).long())
