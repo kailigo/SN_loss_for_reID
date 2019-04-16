@@ -11,7 +11,7 @@ Python 3 + PyTorch 4.0
 sh ./train.sh
 
 ## Test
-sh ./test.sh
+sh ./train.sh
 
 ## Results
 
