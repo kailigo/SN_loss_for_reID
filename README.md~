@@ -27,7 +27,7 @@ sh ./test.sh
 
 ### Quantitative Results
 
-<!-- Results on Market1501 -->
+Results on Market1501
 ![Retrieval](/figs/quantitative.png)
 
 <!-- Analysis on the impact of gallery size
@@ -36,10 +36,10 @@ sh ./test.sh
 
 ### Visual Results
 
-<!-- Pedestrian retrieval results -->
+Pedestrian retrieval results
 ![Retrieval](/figs/retrieval.png)
 
-<!-- Pedestrian feature embedding visualization -->
+Pedestrian feature embedding visualization
 ![Embedding visualization](/figs/embedding.png)
 
 ## Citation
