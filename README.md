@@ -5,12 +5,17 @@ This repository is for the paper introduced in the following paper
 Kai Li, Zhengming Ding, Kunpeng Li, Yulun Zhang, and Yun Fu, "Support Neighbor Loss for Person Re-Identification", ACM Multimedia (ACM MM) 2018, [[arXiv]](https://arxiv.org/abs/1808.06030) 
 
 ## Environment
-Python 3 + PyTorch 4.0
+Python 3 + PyTorch 3.0
+
+## Data preparation 
 
 ## Train
 sh ./train.sh
 
 ## Test
+
+### Pretrained models
+
 sh ./test.sh
 
 ## Results
