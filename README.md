@@ -8,13 +8,15 @@ Kai Li, Zhengming Ding, Kunpeng Li, Yulun Zhang, and Yun Fu, "Support Neighbor L
 Python 3 + PyTorch 3.0
 
 ## Data preparation 
+Please refer [this repo](https://github.com/huanghoujing/person-reid-triplet-loss-baseline) for the data preparation and modify the data locations accordingly in the train.sh and test.sh files.
+
 
 ## Train
 sh ./train.sh
 
 ## Test
 
-### Pretrained models
+### Pretrained models: [Market1501](https://github.com/kailigo/SN_loss_for_reID), [CUHK01](https://github.com/kailigo/SN_loss_for_reID), [CUHK03](https://github.com/kailigo/SN_loss_for_reID)
 
 sh ./test.sh
 
