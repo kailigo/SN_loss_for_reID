@@ -18,7 +18,7 @@ sh ./train.sh
 
 ## Test
 
-### Pretrained models: [Market1501](https://github.com/kailigo/SN_loss_for_reID), [CUHK01](https://github.com/kailigo/SN_loss_for_reID), [CUHK03](https://github.com/kailigo/SN_loss_for_reID)
+### Pretrained models: [Market1501](https://drive.google.com/open?id=1uDjn--GpwtXyasG5bLP0JmRayOg0xBBk), [CUHK01](https://drive.google.com/open?id=1uDjn--GpwtXyasG5bLP0JmRayOg0xBBk), [CUHK03](https://drive.google.com/open?id=1uDjn--GpwtXyasG5bLP0JmRayOg0xBBk)
 ```
 sh ./test.sh
 ```

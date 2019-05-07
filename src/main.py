@@ -607,6 +607,9 @@ def main():
 
       optimizer.zero_grad()
       loss.backward()
+
+
+
       optimizer.step()
 
       if (step + 1) % 10 == 0:
